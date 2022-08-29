@@ -1,0 +1,7 @@
+ipython
+black
+mypy
+pillow
+types-pillow
+tqdm
+types-tqdm

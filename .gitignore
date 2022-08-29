@@ -1,0 +1,11 @@
+.DS_Store
+
+/.mypy_cache
+/env
+/png
+/zbd
+
+*.zbd
+*.zip
+*.png
+*.json
