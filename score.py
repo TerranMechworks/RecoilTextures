@@ -83,8 +83,8 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    atlas_path = args.png_dir / "dedupe.json"
-    with atlas_path.open("r") as f:
+    dedupe_path = args.png_dir / "dedupe.json"
+    with dedupe_path.open("r") as f:
         texture_atlas = json.load(f)
 
     for texture_name, texture_infos in sorted(texture_atlas.items()):
@@ -133,16 +133,58 @@ def main() -> None:
                     raise RuntimeError(
                         f"best is neither pal nor rgb? {texture_name} {mission_name}"
                     )
+
+                # upscale rgb to best rgb
+                for ti in mission_tis_rgb:
+                    if ti == best_rgb_ti:
+                        continue
+                    ti["upscale"] = {
+                        "texture": best_rgb_ti["name"],
+                        "mission": best_rgb_ti["mission"],
+                        "package": best_rgb_ti["package"],
+                    }
+
+                # upscale pal to best pal
+                for ti in mission_tis_pal:
+                    if ti == best_pal_ti:
+                        continue
+                    ti["upscale"] = {
+                        "texture": best_pal_ti["name"],
+                        "mission": best_pal_ti["mission"],
+                        "package": best_pal_ti["package"],
+                    }
             elif mission_tis_rgb:
                 assert mission_tis_rgb == mission_tis, (mission_tis_rgb, mission_tis)
                 # no pal textures, so only need to look at rgb
                 best_all_ti = max(mission_tis, key=score_texture)
+
+                for ti in mission_tis:
+                    if ti == best_all_ti:
+                        continue
+                    ti["upscale"] = {
+                        "texture": best_all_ti["name"],
+                        "mission": best_all_ti["mission"],
+                        "package": best_all_ti["package"],
+                    }
             elif mission_tis_pal:
                 assert mission_tis_pal == mission_tis, (mission_tis_pal, mission_tis)
                 # no rgb textures, so only need to look at pal
                 best_all_ti = max(mission_tis, key=score_texture)
+
+                for ti in mission_tis:
+                    if ti == best_all_ti:
+                        continue
+                    ti["upscale"] = {
+                        "texture": best_all_ti["name"],
+                        "mission": best_all_ti["mission"],
+                        "package": best_all_ti["package"],
+                    }
             else:
                 raise RuntimeError(f"no textures? {texture_name} {mission_name}")
+
+    upscale_path = args.png_dir / "upscale.json"
+    with upscale_path.open("w") as f:
+        json.dump(texture_atlas, f, indent=2)
 
 
 if __name__ == "__main__":
